@@ -4,3 +4,4 @@ nltk==3.8.1
 contractions==0.1.73
 emoji==2.8.0
 scikit-learn==1.6.1  # This is the sklearn package
+tensorflow==2.13.0
