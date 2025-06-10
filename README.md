@@ -1,0 +1,2 @@
+# rain-prediction-app
+ Rain Prediction App is an interactive web application that predicts whether it will rain tomorrow in various locations across Australia. Built using Streamlit, TensorFlow, and scikit-learn, the app uses a trained neural network model to make binary predictions (Yes/No) based on historical and current weather features.  It is designed to assist users — including weather enthusiasts, analysts, and researchers — in quickly estimating the likelihood of rainfall the next day using accessible and meaningful weather inputs.
