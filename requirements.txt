@@ -1,7 +1,7 @@
-streamlit==1.29.0
-joblib==1.3.2
-nltk==3.8.1
-contractions==0.1.73
-emoji==2.8.0
-scikit-learn==1.6.1  # This is the sklearn package
+streamlit
 tensorflow==2.13.0
+pandas
+numpy
+scikit-learn
+joblib
+
