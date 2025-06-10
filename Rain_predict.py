@@ -35,7 +35,7 @@ from tensorflow.keras.models import load_model
 from datetime import datetime
 
 # Load model and scaler
-model = load_model('model.h5')
+model = load_model('model.keras')
 scaler = joblib.load('scaler.joblib')
 
 # Direction to degrees
