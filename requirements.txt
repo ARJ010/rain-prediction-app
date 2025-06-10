@@ -1,9 +1,9 @@
 tensorflow==2.13.0
 streamlit==1.29.0
-scikit-learn
-pandas
 numpy
 joblib
-matplotlib
-seaborn
+pandas
+scikit-learn
+rich==13.7.1
+
 
