@@ -14,7 +14,7 @@ Predict whether it will rain tomorrow in Australia using weather data and a trai
 
 ## 🚀 Live Demo
 
-👉 [Launch the App on Streamlit Cloud](https://your-streamlit-url.streamlit.app)
+👉 [Launch the App on Streamlit Cloud](https://aus-rain-prediction-app.streamlit.app)
 
 ---
 
