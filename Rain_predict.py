@@ -1,32 +1,4 @@
 import streamlit as st
-st.set_page_config(
-    page_title="Rain Tomorrow Prediction",
-    page_icon="🌦️",
-    layout="wide"
-)
-
-st.markdown("""
-    <style>
-    .main {
-        background-color: #0E1117;
-        color: #FAFAFA;
-    }
-    .block-container {
-        padding-top: 2rem;
-    }
-    .stApp {
-        background-image: url("https://images.unsplash.com/photo-1601197987860-65d84d8b8f17");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }
-    .stSidebar {
-        background-color: #1c1c1e !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-
 import pandas as pd
 import numpy as np
 import math
@@ -34,11 +6,17 @@ import joblib
 from tensorflow.keras.models import load_model
 from datetime import datetime
 
+st.set_page_config(
+    page_title="Rain Tomorrow Prediction",
+    page_icon="🌦️",
+    layout="wide"
+)
+
 # Load model and scaler
-model = load_model('model.keras')
+model = load_model('model.h5')
 scaler = joblib.load('scaler.joblib')
 
-# Direction to degrees
+# Direction to degrees mapping
 DIRECTION_DEGREES = {
     'N': 0, 'NNE': 22.5, 'NE': 45, 'ENE': 67.5,
     'E': 90, 'ESE': 112.5, 'SE': 135, 'SSE': 157.5,
@@ -46,7 +24,6 @@ DIRECTION_DEGREES = {
     'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5,
 }
 
-# Location one-hot columns
 location_columns = [
     'Albany', 'Albury', 'AliceSprings', 'BadgerysCreek', 'Ballarat', 'Bendigo',
     'Brisbane', 'Cairns', 'Canberra', 'Cobar', 'CoffsHarbour', 'Dartmoor',
@@ -64,29 +41,6 @@ cols_to_scale = [
     'Humidity9am', 'Humidity3pm', 'Pressure9am', 'Cloud3pm', 'Temp3pm', 'year'
 ]
 
-# --- UI ---
-st.title("🌦️ Rain Tomorrow Prediction")
-st.markdown("Predict whether it will rain tomorrow in Australia using weather features and a trained neural network model.")
-
-# --- Inputs ---
-with st.sidebar:
-    st.header("📋 Input Features")
-    date = st.date_input("Select Date", datetime.today())
-    selected_location = st.selectbox("Select Location", location_columns)
-    min_temp = st.number_input("Min Temperature (°C)", value=10.0)
-    rainfall = st.number_input("Rainfall (mm)", value=0.0)
-    gust_dir = st.selectbox("Gust Direction", DIRECTION_DEGREES)
-    wind9am_dir = st.selectbox("Wind Direction at 9 AM", DIRECTION_DEGREES)
-    wind3pm_dir = st.selectbox("Wind Direction at 3 PM", DIRECTION_DEGREES)
-    wind_gust_speed = st.number_input("Wind Gust Speed (km/h)", value=30.0)
-    wind_speed_3pm = st.number_input("Wind Speed at 3 PM (km/h)", value=20.0)
-    humidity_9am = st.slider("Humidity at 9 AM (%)", 0, 100, 50)
-    humidity_3pm = st.slider("Humidity at 3 PM (%)", 0, 100, 50)
-    pressure_9am = st.number_input("Pressure at 9 AM (hPa)", value=1015.0)
-    cloud_3pm = st.slider("Cloud Cover at 3 PM (oktas)", 0, 8, 3)
-    temp_3pm = st.number_input("Temperature at 3 PM (°C)", value=20.0)
-    rain_today = st.radio("Did it rain today?", ["No", "Yes"])
-
 # --- Helpers ---
 def encode_cyclic(value, max_val):
     return math.sin(2 * math.pi * value / max_val), math.cos(2 * math.pi * value / max_val)
@@ -94,6 +48,39 @@ def encode_cyclic(value, max_val):
 def encode_wind_dir(dir_str):
     deg = DIRECTION_DEGREES.get(dir_str, 0)
     return math.sin(math.radians(deg)), math.cos(math.radians(deg))
+
+# --- UI ---
+st.title("🌦️ Rain Tomorrow Prediction")
+st.markdown(
+    """
+    Predict whether it will rain tomorrow in Australia using weather features and a trained neural network model.
+    Please provide the following input values:
+    """
+)
+
+# Arrange inputs in columns for professional layout
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    date = st.date_input("Select Date", datetime.today())
+    selected_location = st.selectbox("Select Location", location_columns)
+    min_temp = st.number_input("Min Temperature (°C)", value=10.0)
+    rainfall = st.number_input("Rainfall (mm)", value=0.0)
+    rain_today = st.radio("Did it rain today?", ["No", "Yes"])
+
+with col2:
+    gust_dir = st.selectbox("Gust Direction", DIRECTION_DEGREES)
+    wind9am_dir = st.selectbox("Wind Direction at 9 AM", DIRECTION_DEGREES)
+    wind3pm_dir = st.selectbox("Wind Direction at 3 PM", DIRECTION_DEGREES)
+    wind_gust_speed = st.number_input("Wind Gust Speed (km/h)", value=30.0)
+    wind_speed_3pm = st.number_input("Wind Speed at 3 PM (km/h)", value=20.0)
+
+with col3:
+    humidity_9am = st.slider("Humidity at 9 AM (%)", 0, 100, 50)
+    humidity_3pm = st.slider("Humidity at 3 PM (%)", 0, 100, 50)
+    pressure_9am = st.number_input("Pressure at 9 AM (hPa)", value=1015.0)
+    cloud_3pm = st.slider("Cloud Cover at 3 PM (oktas)", 0, 8, 3)
+    temp_3pm = st.number_input("Temperature at 3 PM (°C)", value=20.0)
 
 # --- Feature Engineering ---
 month_sin, month_cos = encode_cyclic(date.month, 12)
@@ -128,20 +115,19 @@ input_dict = {
     'WindDir3pm_cos': wind_dir_3pm_cos,
 }
 
-# One-hot encode location
 for loc in location_columns:
     input_dict[f"Location_{loc}"] = 1 if loc == selected_location else 0
 
-# --- Prediction ---
 input_df = pd.DataFrame([input_dict])
 input_df[cols_to_scale] = scaler.transform(input_df[cols_to_scale])
+
+# --- Prediction ---
 prediction = model.predict(input_df.values)[0][0]
 result = "🌧️ Yes" if prediction > 0.5 else "☀️ No"
 confidence = prediction if prediction > 0.5 else 1 - prediction
 
 # --- Output ---
 st.markdown("## 🌤️ Prediction Result")
-st.subheader(f"**Tomorrow's Rain Forecast:** {result}")
-st.markdown(f"<div style='font-size: 20px;'>Confidence: <b>{confidence:.2%}</b></div>", unsafe_allow_html=True)
-
+st.success(f"**Will it rain tomorrow?** {result}")
+st.info(f"**Model Confidence:** {confidence:.2%}")
 
